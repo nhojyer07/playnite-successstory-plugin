@@ -57,7 +57,6 @@ namespace SuccessStory.Clients
         public ExophaseAchievements() : base("Exophase")
         {
             CookiesDomains = new List<string> { ".exophase.com" };
-
 		}
 
 
