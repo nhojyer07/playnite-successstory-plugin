@@ -163,6 +163,7 @@
   <ItemGroup>
     <Compile Include="Clients\GameJoltAchievements.cs" />
     <Compile Include="Clients\ShadPS4Achievements.cs" />
+    <Compile Include="Clients\Xbox360Achievements.cs" />
     <Compile Include="Clients\ZenlessZoneZeroAchievements.cs" />
     <Compile Include="Clients\HonkaiStarRailAchievements.cs" />
     <Compile Include="Clients\WutheringWavesAchievements.cs" />

@@ -62,6 +62,7 @@ namespace SuccessStory.Services
                         TryAddProvider(AchievementSource.RetroAchievements, () => new RetroAchievements());
                         TryAddProvider(AchievementSource.RPCS3, () => new Rpcs3Achievements());
                         TryAddProvider(AchievementSource.ShadPS4, () => new ShadPS4Achievements());
+                        TryAddProvider(AchievementSource.Xbox360, () => new Xbox360Achievements());
                         TryAddProvider(AchievementSource.Starcraft2, () => new Starcraft2Achievements());
                         TryAddProvider(AchievementSource.Steam, () => new SteamAchievements());
                         TryAddProvider(AchievementSource.Xbox, () => new XboxAchievements());
@@ -126,7 +127,21 @@ namespace SuccessStory.Services
                 gameAchievements = Get(game, true);
                 if (gameAchievements != null && gameAchievements.HasData)
                 {
-                    if (gameAchievements.SourcesLink?.Name.IsEqual("steam") ?? false)
+					// eFMann - added Xbox360/Xenia
+					if (PlayniteTools.GameUseXbox360(game) && PluginSettings.Settings.EnableXbox360Achievements)
+					{
+						Xbox360Achievements xbox360Achievements = new Xbox360Achievements();
+						if (xbox360Achievements.IsConfigured())
+						{
+							gameAchievements = xbox360Achievements.GetAchievements(game);
+							if (gameAchievements?.HasAchievements ?? false)
+							{
+								return gameAchievements;
+							}
+						}
+					}
+
+					if (gameAchievements.SourcesLink?.Name.IsEqual("steam") ?? false)
                     {
                         string str = gameAchievements.SourcesLink?.Url.Replace("https://steamcommunity.com/stats/", string.Empty).Replace("/achievements", string.Empty);
                         if (uint.TryParse(str, out uint AppId))
@@ -306,7 +321,7 @@ namespace SuccessStory.Services
             else if (gameAchievements == null && game != null)
             {
                 gameAchievements = GetDefault(game);
-                Add(gameAchievements);
+                //Add(gameAchievements);
             }
 
             return gameAchievements;
@@ -474,15 +489,20 @@ namespace SuccessStory.Services
             WutheringWaves,
             HonkaiStarRail,
             ZenlessZoneZero,
-			ShadPS4
+			ShadPS4,
+			Xbox360
 		}
 
         private static AchievementSource GetAchievementSourceFromLibraryPlugin(SuccessStorySettings settings, Game game)
         {
             ExternalPlugin pluginType = PlayniteTools.GetPluginType(game.PluginId);
             if (pluginType == ExternalPlugin.None)
-            {
-                if (game.Source?.Name?.Contains("Xbox Game Pass", StringComparison.OrdinalIgnoreCase) ?? false)
+			{
+				if (settings.EnableXbox360Achievements && GameUseXbox360(game)) // eFMann - added Xbox350 source
+				{
+					return AchievementSource.Xbox360;
+				}
+				if (game.Source?.Name?.Contains("Xbox Game Pass", StringComparison.OrdinalIgnoreCase) ?? false)
                 {
                     return AchievementSource.Xbox;
                 }
@@ -569,7 +589,11 @@ namespace SuccessStory.Services
 
                 case ExternalPlugin.XboxLibrary:
                 case ExternalPlugin.XCloud:
-                    if (settings.EnableXbox)
+					if (settings.EnableXbox360Achievements && GameUseXbox360(game)) // eFMann
+					{
+						return AchievementSource.Xbox360;
+					}
+					if (settings.EnableXbox)
                     {
                         return AchievementSource.Xbox;
                     }
@@ -620,7 +644,7 @@ namespace SuccessStory.Services
 
         private static AchievementSource GetAchievementSourceFromEmulator(SuccessStorySettings settings, Game game)
         {
-			// Priority 1: Check for RPCS3 or ShadPS4
+			// Priority 1: Check for RPCS3 or ShadPS4 or Xenia
 			if (settings.EnableRpcs3Achievements && PlayniteTools.GameUseRpcs3(game))
             {
                 return AchievementSource.RPCS3;
@@ -628,10 +652,14 @@ namespace SuccessStory.Services
 			if (settings.EnableShadPS4Achievements && PlayniteTools.GameUseShadPS4(game))
             {
                 return AchievementSource.RPCS3;
-            }
+			}
+			if (settings.EnableXbox360Achievements && PlayniteTools.GameUseXbox360(game) )
+			{
+				return AchievementSource.Xbox360;
+			}
 
-            // Priority 2: Check if any game action is an emulator
-            bool hasEmulatorAction = game.GameActions.Any(action => action.Type == GameActionType.Emulator);
+			// Priority 2: Check if any game action is an emulator
+			bool hasEmulatorAction = game.GameActions.Any(action => action.Type == GameActionType.Emulator);
             if (settings.EnableRetroAchievements && hasEmulatorAction)
             {
                 return AchievementSource.RetroAchievements;
