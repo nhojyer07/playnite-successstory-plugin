@@ -651,7 +651,7 @@ namespace SuccessStory.Services
             }
 			if (settings.EnableShadPS4Achievements && PlayniteTools.GameUseShadPS4(game))
             {
-                return AchievementSource.RPCS3;
+                return AchievementSource.ShadPS4;
 			}
 			if (settings.EnableXbox360Achievements && PlayniteTools.GameUseXbox360(game) )
 			{
