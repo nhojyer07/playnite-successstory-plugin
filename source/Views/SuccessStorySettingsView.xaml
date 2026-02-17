@@ -899,7 +899,7 @@
                         </Expander>
 
                         <Expander Margin="0,10,0,0"
-                                  Visibility="Visible">
+                                  Visibility="{Binding Settings.EnableLocal, Converter={StaticResource BooleanToVisibilityConverter}}">
                             <Expander.Style>
                                 <Style TargetType="{x:Type Expander}" BasedOn="{StaticResource {x:Type Expander}}">
                                     <Setter Property="Background" Value="Transparent" />
